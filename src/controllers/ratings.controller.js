@@ -1,11 +1,14 @@
 import { dbPool } from "../utils/index.js";
 
+
+// GET
 export const getRatings = async (req, res) => {
     const response = await dbPool.query('SELECT * FROM rating ORDER BY id ASC');
 
     res.status(200).json(response.rows);
 }
 
+// GET :ID
 export const getRatingById = async (req, res) => {
     const id = parseInt(req.params.id);
     const response = await dbPool.query('SELECT * FROM rating WHERE id = $1', [id]);
@@ -13,10 +16,20 @@ export const getRatingById = async (req, res) => {
     res.json(response.rows);
 };
 
+// POST
 export const createRating = async (req, res) => {
     const { cardId, comment, value } = req.body;
-    const userId = '222';
-    await dbPool.query('INSERT INTO rating (card_id, user_id, comment, value) VALUES ($1, $2, $3, $4)', [cardId, userId, comment, value]);
+    const userId = req.user.id;
+
+    try {
+        await dbPool.query('INSERT INTO rating (card_id, user_id, comment, value) VALUES ($1, $2, $3, $4)', [cardId, userId, comment, value]);
+    } catch (err) {
+        console.log(err);
+        res.status(400).json({
+            message: 'Error: Create rating was not possible',
+            description: err.message
+        });
+    }
 
     res.status(200).json({
         message: 'Rating Added successfully',
@@ -26,6 +39,7 @@ export const createRating = async (req, res) => {
     });
 };
 
+// PUT
 export const updateRating = async (req, res) => {
     const id = parseInt(req.params.id);
     const { comment, value } = req.body;
@@ -44,6 +58,7 @@ export const updateRating = async (req, res) => {
     });
 };
 
+// DELETE
 export const deleteRating = async (req, res) => {
     const id = parseInt(req.params.id);
     await dbPool.query('DELETE FROM rating where id = $1', [

@@ -1,5 +1,6 @@
 import { dbPool } from "../utils/index.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const loginUser = async (req, res) => {
     const { email, password} = req.body;
@@ -11,7 +12,14 @@ export const loginUser = async (req, res) => {
         const isValidPassword = await bcrypt.compare(password, response.rows[0].password);
         if (!isValidPassword) return res.status(400).json({ message: 'Password is incorrect for this user'});
 
-        res.status(200).json({ message: 'Login Succesful'});
+        // Generate JWT Token
+        const token = jwt.sign({
+            id: response.rows[0].id,
+            name: response.rows[0].name,
+            email: response.rows[0].email
+        }, process.env.JWT_TOKEN_SECRET)
+
+        res.status(200).header('auth-token', token).json({ message: 'Login Successful', data: {token}});
 
     } catch (err) {
         console.log(err);
