@@ -2,6 +2,7 @@ import { dbPool } from "../utils/index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+// POST
 export const loginUser = async (req, res) => {
     const { email, password} = req.body;
 
